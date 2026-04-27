@@ -1,0 +1,796 @@
+ GameTitle: {
+  shape: class
+  -id: int
+  -name: string
+  -slug: string
+  -logoUrl: string (nullable)
+  -isActive: bool
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  UTILISATEURS & AUTH
+# ─────────────────────────────────────────
+
+User: {
+  shape: class
+  -id: int
+  -firstName: string
+  -lastName: string
+  -email: string
+  -password: string
+  -isVerified: bool
+  -picture: string (nullable)
+  -role: enum("USER", "ORGANISATOR", "ADMIN")
+  -statut: enum("ACTIVE", "BANNED", "SUSPENDED")
+  -city: string
+  -country: string
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+OAuthAccount: {
+  shape: class
+  -id: int
+  -onwer: int
+  -provider: enum("FACEBOOK", "GOOGLE", "DISCORD")
+  -providerUserId: string
+  -providerEmail: string (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+  +UNIQUE(provider, providerUserId)
+}
+
+UserPasswordResetToken: {
+  shape: class
+  -id: int
+  -owner: int
+  -token: string
+  -expiresAt: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  PROFIL JOUEUR
+# ─────────────────────────────────────────
+
+PlayerProfile: {
+  shape: class
+  -id: int
+  -owner: int
+  -pseudo: string
+  -bio: string
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+PlayerProfileRole: {
+  shape: class
+  -id: int
+  -playerProfileId: int
+  -gameTitleId: int
+  -mainRole: enum("TOP", "JUNGLE", "MID", "ADC", "SUPPORT", "FLEX", "DUELIST", "CONTROLLER", "INITIATOR", "SENTINEL", "CARRY", "OTHER")
+  -isMain: bool
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+PlayerStatsAggregate: {
+  shape: class
+  -id: int
+  -playerProfileId: int
+  -seasonId: int (nullable)
+  -registrationId: int (nullable)
+  -fixturesPlayed: int
+  -wins: int
+  -losses: int
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  SAISON & COMPÉTITION
+# ─────────────────────────────────────────
+
+Season: {
+  shape: class
+  -id: int
+  -number: int
+  -status: enum("DRAFT", "RUNNING", "FINISHED")
+  -startDate: dateTime
+  -endDate: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Competition: {
+  shape: class
+  -id: int
+  -owner: int
+  -seasonId: int (nullable)
+  -gameTitleId: int
+  -name: string
+  -type: enum("LEAGUE", "CUP", "SWISS", "DOUBLE_ELIMINATION")
+  -description: string
+  -fixtureFormat: enum("BO1", "BO3", "BO5")
+  -maxTeams: int
+  -registrationOpenAt: dateTime
+  -registrationCloseAt: dateTime
+  -status: enum("DRAFT", "PUBLISHED", "LOCKED", "RUNNING", "FINISHED")
+  -startDate: dateTime
+  -endDate: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+CompetitionRule: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -key: enum("POINTS_WIN", "POINTS_DRAW", "POINTS_LOSS", "POINTS_FORFEIT_WIN", "POINTS_FORFEIT_LOSS", "MAX_ROSTER_SIZE", "MIN_ROSTER_SIZE", "TIE_BREAKER_1", "TIE_BREAKER_2", "OTHER")
+  -value: string
+  -createdAt: dateTime
+  -updatedAt: dateTime
+  +UNIQUE(competitionId, key)
+}
+
+QualificationSlot: {
+  shape: class
+  -id: int
+  -sourceCompetitionId: int
+  -targetCompetitionId: int
+  -rankFrom: int
+  -rankTo: int
+  -slotType: enum("DIRECT", "PLAYOFF_SEED", "RELEGATION")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  ÉQUIPES & LINEUPS
+# ─────────────────────────────────────────
+
+Team: {
+  shape: class
+  -id: int
+  -owner: int
+  -name: string
+  -logo: string
+  -description: string
+  -city: string
+  -country: string
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+TeamMember: {
+  shape: class
+  -id: int
+  -teamId: int
+  -owner: int
+  -role: enum("CAPTAIN", "VICE_CAPTAIN", "MEMBER")
+  -joinedAt: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+LineUp: {
+  shape: class
+  -id: int
+  -teamId: int
+  -name: string
+  -status: enum("ACTIVE", "ARCHIVED")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+LineUpMember: {
+  shape: class
+  -id: int
+  -lineUpId: int
+  -teamMemberId: int
+  -role: enum("PLAYER", "SUBSTITUTE", "CAPTAIN")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Registration: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -lineUpId: int
+  -status: enum("PENDING", "APPROVED", "REJECTED")
+  -registeredAt: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  FIXTURES & PARTIES
+# ─────────────────────────────────────────
+
+LeagueRound: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -roundNumber: int
+  -label: string
+  -startWindow: dateTime
+  -endWindow: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Fixture: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -leagueRoundId: int (nullable)
+  -venueSlotId: int (nullable)
+  -lineUpAId: int
+  -lineUpBId: int (nullable)
+  -opponentStatus: enum("SET", "TBD", "BYE")
+  -scheduledAt: dateTime
+  -status: enum("SCHEDULED", "ONGOING", "PENDING_REVIEW", "VALIDATED", "REJECTED", "FORFEITED")
+  -forfeitedByLineUpId: int (nullable)
+  -forfeitedAt: dateTime (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+FixtureGame: {
+  shape: class
+  -id: int
+  -fixtureId: int
+  -gameNumber: int
+  -durationSecs: int (nullable)
+  -lineUpAKills: int
+  -lineUpBKills: int
+  -proofUrl: string
+  -proofUploaderUserId: int (FK → User)
+  -reviewSource: enum("AI", "ADMIN")
+  -reviewedByUserId: int (nullable, FK → User)
+  -status: enum("PENDING", "VALIDATED", "REJECTED")
+  -winner: enum("LINEUP_A", "LINEUP_B", "DRAW")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+FixtureGameStatusHistory: {
+  shape: class
+  -id: int
+  -fixtureGameId: int
+  -changedByUserId: int
+  -fromStatus: enum("PENDING", "VALIDATED", "REJECTED")
+  -toStatus: enum("PENDING", "VALIDATED", "REJECTED")
+  -reason: string (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Result: {
+  shape: class
+  -id: int
+  -fixtureId: int
+  -lineUpAScore: int
+  -lineUpBScore: int
+  -winner: enum("LINEUP_A", "LINEUP_B", "DRAW")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Dispute: {
+  shape: class
+  -id: int
+  -fixtureGameId: int
+  -raisedByUserId: int
+  -reason: string
+  -evidenceUrl: string (nullable)
+  -status: enum("OPEN", "UNDER_REVIEW", "RESOLVED", "DISMISSED")
+  -resolvedByUserId: int (nullable)
+  -resolution: string (nullable)
+  -resolvedAt: dateTime (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  STATISTIQUES
+# ─────────────────────────────────────────
+
+PlayerGameStat: {
+  shape: class
+  -id: int
+  -fixtureGameId: int
+  -playerProfileId: int
+  -championId: int (nullable, FK → Champion)
+  -kills: int
+  -deaths: int
+  -assists: int
+  -cs: int (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+Standing: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -lineUpId: int
+  -played: int
+  -wins: int
+  -losses: int
+  -draws: int
+  -points: int
+  -rank: int
+  -tieBreakerInfo: json
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  CHAMPIONS & TITRES
+# ─────────────────────────────────────────
+
+Champion: {
+  shape: class
+  -id: int
+  -gameTitleId: int
+  -name: string
+  -picture: string (nullable)
+  -isActive: bool
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  VENUE & STREAMING
+# ─────────────────────────────────────────
+
+Venue: {
+  shape: class
+  -id: int
+  -name: string
+  -type: enum("PHYSICAL", "VIRTUAL")
+  -address: string (nullable)
+  -city: string (nullable)
+  -country: string (nullable)
+  -capacity: int (nullable)
+  -lat: float (nullable)
+  -lng: float (nullable)
+  -status: enum("ACTIVE", "INACTIVE", "MAINTENANCE")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+VenueSlot: {
+  shape: class
+  -id: int
+  -venueId: int
+  -startTime: dateTime
+  -endTime: dateTime
+  -status: enum("AVAILABLE", "BOOKED", "BLOCKED")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+StreamLink: {
+  shape: class
+  -id: int
+  -fixtureId: int
+  -url: string
+  -language: enum("EN", "FR", "ES", "DE", "OTHER")
+  -platform: enum("TWITCH", "YOUTUBE", "FACEBOOK", "KICK", "OTHER")
+  -status: enum("SCHEDULED", "LIVE", "ENDED")
+  -startsAt: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  NOTIFICATIONS & AUDIT
+# ─────────────────────────────────────────
+
+Notification: {
+  shape: class
+  -id: int
+  -owner: int
+  -type: enum("MATCH_SCHEDULED", "REGISTRATION_APPROVED", "REGISTRATION_REJECTED", "MATCH_RESULT", "DISPUTE_OPENED", "DISPUTE_RESOLVED", "QUALIFICATION_EARNED", "OTHER")
+  -referenceType: string (nullable)
+  -referenceId: int (nullable)
+  -isRead: bool
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+AuditLog: {
+  shape: class
+  -id: int
+  -actorUserId: int
+  -action: string
+  -targetType: string
+  -targetId: int
+  -payload: json
+  -ipAddress: string (nullable)
+  -userAgent: string (nullable)
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ─────────────────────────────────────────
+#  BRACKET
+# ─────────────────────────────────────────
+
+Bracket: {
+  shape: class
+  -id: int
+  -competitionId: int
+  -size: int
+  -seedingMode: enum("RANDOM", "MANUAL")
+  -generatedAt: dateTime
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+BracketNode: {
+  shape: class
+  -id: int
+  -bracketId: int
+  -roundNumber: int
+  -positionIndex: int
+  -fixtureId: int (nullable)
+  -label: string
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+BracketEntry: {
+  shape: class
+  -id: int
+  -nodeId: int
+  -slot: enum("A", "B")
+  -entryType: enum("DIRECT", "FROM_NODE")
+  -lineUpId: int (nullable)
+  -fromNodeId: int (nullable)
+  -fromOutcome: enum("WINNER", "LOSER")
+  -seed: int (nullable)
+  -isBye: bool
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+BracketEdge: {
+  shape: class
+  -id: int
+  -fromNodeId: int
+  -toNodeId: int
+  -outcome: enum("WINNER", "LOSER")
+  -toSlot: enum("A", "B")
+  -createdAt: dateTime
+  -updatedAt: dateTime
+}
+
+# ════════════════════════════════════════════
+#  RELATIONS
+# ════════════════════════════════════════════
+
+User -> PlayerProfile: owns {
+  source-arrowhead: "1"
+  target-arrowhead: "0..1"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+PlayerProfile -> PlayerStatsAggregate: has {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+Season -> Competition: groups {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+Team -> TeamMember: roster {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+Team -> LineUp: lineups {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+Venue -> VenueSlot: slots {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+# ── COMPOSITION (diamant plein) [M1] ────────
+
+LineUp -> LineUpMember: members {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Competition -> Registration: registrations {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Competition -> LeagueRound: rounds {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Competition -> Fixture: fixturees {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Competition -> Standing: standings {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Competition -> Bracket: bracket {
+  source-arrowhead: "1"
+  target-arrowhead: "0..1"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+# [M10] Règlement structuré rattaché à la compétition
+Competition -> CompetitionRule: rules {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Fixture -> FixtureGame: games {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Fixture -> Result: result {
+  source-arrowhead: "1"
+  target-arrowhead: "0..1"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+# [M11] Historique de statut rattaché à la partie
+FixtureGame -> FixtureGameStatusHistory: statusHistory {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+# [M8] Litige rattaché à une partie
+FixtureGame -> Dispute: disputes {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+FixtureGame -> PlayerGameStat: stats {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+Bracket -> BracketNode: nodes {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+BracketNode -> BracketEntry: entries {
+  source-arrowhead: "1"
+  target-arrowhead: "0..2"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+BracketNode -> BracketEdge: edges {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+User -> UserPasswordResetToken: passwordResetTokens {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+User -> OAuthAccount: oauthAccounts {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+User -> Notification: notifications {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+# [M7] Rôles par jeu rattachés au profil joueur
+PlayerProfile -> PlayerProfileRole: roles {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: true
+}
+
+# ── ASSOCIATIONS ─────────────────────────────
+
+User -- Team: creates {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+User -- Competition: creates {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+User -- TeamMember: memberOf {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+TeamMember -- LineUpMember: selectedAs {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+LineUp -- Registration: registersTo {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+PlayerStatsAggregate -- Registration: context {
+  source-arrowhead: "0..*"
+  target-arrowhead: "0..1"
+}
+
+LeagueRound -- Fixture: groups {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+VenueSlot -- Fixture: scheduledIn {
+  source-arrowhead: "0..1"
+  target-arrowhead: "0..*"
+}
+
+LineUp -- Standing: ranked {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+User -- AuditLog: triggers {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+BracketNode -- Fixture: instantiates {
+  source-arrowhead: "1"
+  target-arrowhead: "0..1"
+}
+
+BracketEdge -- BracketNode: toNode {
+  source-arrowhead: "0..*"
+  target-arrowhead: "1"
+}
+
+Fixture -- StreamLink: streams {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+PlayerGameStat -- PlayerProfile: recordedFor {
+  source-arrowhead: "0..*"
+  target-arrowhead: "1"
+}
+
+# [M4] Stats liées au champion joué
+PlayerGameStat -- Champion: playedAs {
+  source-arrowhead: "0..*"
+  target-arrowhead: "0..1"
+}
+
+# [M6] Deux rôles distincts de User sur FixtureGame
+User -- FixtureGame: uploadsProofFor {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+User -- FixtureGame: reviewsGame {
+  source-arrowhead: "0..1"
+  target-arrowhead: "0..*"
+}
+
+# [M7] Champion appartient à un titre de jeu
+GameTitle -> Champion: champions {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+  target-arrowhead.shape: diamond
+  target-arrowhead.style.filled: false
+}
+
+# [M7] Compétition liée à un titre de jeu
+GameTitle -- Competition: hosts {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+# [M7] Rôle joueur contextualisé par titre de jeu
+GameTitle -- PlayerProfileRole: defines {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+# [M8] Litige ouvert par un utilisateur
+User -- Dispute: raises {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+# [M8] Litige résolu par un admin
+User -- Dispute: resolves {
+  source-arrowhead: "0..1"
+  target-arrowhead: "0..*"
+}
+
+# [M11] Changement de statut effectué par un utilisateur
+User -- FixtureGameStatusHistory: changes {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+# [M12] Qualification entre deux compétitions
+Competition -- QualificationSlot: sourceOf {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
+
+Competition -- QualificationSlot: targetOf {
+  source-arrowhead: "1"
+  target-arrowhead: "0..*"
+}
